@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
@@ -14,7 +14,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor:'#999999',
+        tabBarInactiveTintColor: '#ffffff', // Adicione esta linha para definir a cor dos ícones inativos
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
@@ -23,7 +24,12 @@ export default function TabLayout() {
             // Use a transparent background on iOS to show the blur effect
             position: 'absolute',
           },
-          default: {},
+          default: {
+            // Use a solid background on Android
+            backgroundColor: "#007AFF",
+            borderTopWidth: 0,
+            elevation: 0,
+          },
         }),
       }}>
       <Tabs.Screen
@@ -34,12 +40,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="config"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Configurações',
+          tabBarIcon: ({ color }) => <MaterialIcons name="settings" size={28} color="white" />,
         }}
       />
+      <Tabs.Screen
+        name="perfil"
+        options={{
+          title: 'Perfil',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
+        }}
+        />
     </Tabs>
   );
 }

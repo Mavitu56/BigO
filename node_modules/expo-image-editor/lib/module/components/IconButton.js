@@ -1,0 +1,17 @@
+import * as React from "react";
+import { TouchableOpacity } from "react-native";
+import { Icon } from "./Icon";
+export function IconButton(props) {
+  const {
+    text,
+    iconID,
+    ...buttonProps
+  } = props;
+  const iconProps = {
+    text,
+    iconID,
+    disabled: buttonProps.disabled
+  };
+  return /*#__PURE__*/React.createElement(TouchableOpacity, buttonProps, /*#__PURE__*/React.createElement(Icon, iconProps));
+}
+//# sourceMappingURL=IconButton.js.map

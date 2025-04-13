@@ -28,6 +28,7 @@ export default function CameraScreen() {
   };
 
   const takePhoto = async () => {
+    console.log('Tirando foto...');
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
       console.log(photo)
@@ -40,7 +41,7 @@ export default function CameraScreen() {
       <CameraView ref={cameraRef} style={styles.camera}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
-            <MaterialIcons name="camera-alt" size={40} color="white" />,
+            <MaterialIcons name="camera-alt" size={40} color="white" />
           </TouchableOpacity>
         </View>
       </CameraView>

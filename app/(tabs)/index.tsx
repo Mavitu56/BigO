@@ -12,14 +12,14 @@ export default function HomeScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={styles.containerMain}>
       <TouchableOpacity style={styles.cameraButton} onPress={handlePhotoPress}>
         <Ionicons name="camera" size={32} color="white" />
         <Text style={styles.cameraText}>Tirar Foto</Text>
       </TouchableOpacity>
 
       <View style={styles.container}>
-      {imageUri && (
+      {imageUri == null ? <Text> Nenhuma imagem carregada</Text> : imageUri && (
         <Image source={{ uri: imageUri as string }} style={{ width: 200, height: 200 }} />
       )}
     </View>
@@ -35,11 +35,24 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  containerMain: {
     flex: 1,
     justifyContent: 'space-between',
     padding: 20,
     backgroundColor: '#fff',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 60,
+    marginVertical: 20,
+    textAlign: 'center',
+    alignItems: 'center',
   },
   cameraButton: {
     backgroundColor: '#007AFF',

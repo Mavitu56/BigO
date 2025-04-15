@@ -2,12 +2,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import { useEffect, useState } from 'react';
+import ImagePicker from 'react-native-image-crop-picker';
 
 export default function CropScreen() {
   const { uri } = useLocalSearchParams();
   const router = useRouter();
 
   const [hasPermission, setHasPermission] = useState(false);
+  const [croppedImageUri, setCroppedImageUri] = useState<string | null>(null);
   const imageUri = uri as string;
 
   useEffect(() => {
@@ -21,8 +23,23 @@ export default function CropScreen() {
     })();
   }, []);
 
+  const handleCrop = async () => {
+    try {
+      const croppedImage = await ImagePicker.openCropper({
+        path: imageUri,
+        width: 300,
+        height: 300,
+        cropping: true,
+        mediaType: 'photo'
+      });
+      setCroppedImageUri(croppedImage.path);
+    } catch (error) {
+      console.error('Erro ao cortar a imagem:', error);
+    }
+  };
+
   const handleConfirm = () => {
-    router.replace({ pathname: '/', params: { imageUri } });
+    router.replace({ pathname: '/', params: { imageUri: croppedImageUri || imageUri } });
   };
 
   if (!hasPermission) {
@@ -43,7 +60,14 @@ export default function CropScreen() {
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: imageUri }} style={styles.image} resizeMode="contain" />
+      <Image
+        source={{ uri: croppedImageUri || imageUri }}
+        style={styles.image}
+        resizeMode="contain"
+      />
+      <TouchableOpacity style={styles.button} onPress={handleCrop}>
+        <Text style={styles.buttonText}>Cortar Imagem</Text>
+      </TouchableOpacity>
       <TouchableOpacity style={styles.button} onPress={handleConfirm}>
         <Text style={styles.buttonText}>Confirmar Recorte</Text>
       </TouchableOpacity>

@@ -1,9 +1,22 @@
-import { View, TextInput, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity, Text, Image, Button, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedView } from '@/components/ThemedView';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
+import { useState } from 'react';
 
 export default function HomeScreen() {
+  const [textImage, settextImage] = useState<string>("");
+  const recognizeML = async () => {
+    console.log("Starting text recognition with react-native-mlkit...");
+    try {
+      const result = await TextRecognition.recognize(imageUri as string);
+      settextImage(result.text);
+      console.log("Recognized text:\n", result.text);
+    } catch (error) {
+      console.error("Text recognition failed:", error);
+    }
+  };
   const router = useRouter();
   const { imageUri } = useLocalSearchParams(); // pega a imagem passada por parâmetro
 
@@ -12,25 +25,37 @@ export default function HomeScreen() {
   };
 
   return (
-    <ThemedView style={styles.containerMain}>
-      <TouchableOpacity style={styles.cameraButton} onPress={handlePhotoPress}>
-        <Ionicons name="camera" size={32} color="white" />
-        <Text style={styles.cameraText}>Tirar Foto</Text>
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <ThemedView style={styles.containerMain}>
+          <TouchableOpacity style={styles.cameraButton} onPress={handlePhotoPress}>
+            <Ionicons name="camera" size={32} color="white" />
+            <Text style={styles.cameraText}>Tirar Foto</Text>
+          </TouchableOpacity>
 
-      <View style={styles.container}>
-      {imageUri == null ? <Text> Nenhuma imagem carregada</Text> : imageUri && (
-        <Image source={{ uri: imageUri as string }} style={{ width: 200, height: 200 }} />
-      )}
-    </View>
+          <View style={styles.container}>
+            {imageUri == null ? (
+              <Text> Nenhuma imagem carregada</Text>
+            ) : (
+              <Image source={{ uri: imageUri as string }} style={{ width: 200, height: 200 }} />
+            )}
+          </View>
 
-      <TextInput
-        style={styles.textInput}
-        placeholder="Digite seu prompt..."
-        placeholderTextColor="#999"
-        multiline
-      />
-    </ThemedView>
+          <Button title="Reconhecer Texto" onPress={recognizeML} />
+
+          <TextInput
+            style={styles.textInput}
+            placeholder="Digite seu prompt..."
+            placeholderTextColor="#999"
+            value={textImage}
+            multiline
+          />
+        </ThemedView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

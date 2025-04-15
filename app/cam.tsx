@@ -1,50 +1,92 @@
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { CameraType } from 'expo-camera';
+import { Camera, Point, useCameraDevice, useCameraDevices, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { runOnJS } from 'react-native-reanimated';
 
 export default function CameraScreen() {
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef<CameraView>(null);
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('back');
+  const cameraRef = useRef<Camera>(null);
   const router = useRouter();
+  const device = useCameraDevice('back');
 
-  if (!permission) return <View />;
-  if (!permission.granted) {
+  const frameProcessor = useFrameProcessor((frame) => {
+    'worklet'
+    console.log(`Frame: ${frame.width}x${frame.height} (${frame.pixelFormat})`)
+  }, [])
+
+  if (!device) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.message}>Carregando câmera...</Text>
+      </View>
+    );
+  }
+
+  if (!hasPermission) {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>Precisamos da sua permissão para usar a câmera</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={async () => {
+            requestPermission();
+          }}
+        >
           <Text style={styles.text}>Conceder Permissão</Text>
         </TouchableOpacity>
       </View>
     );
   }
+  
+  const focus = useCallback((point: Point) => {
+    const c = cameraRef.current
+    if (c == null) return
+    c.focus(point)
+  }, [])
 
-  const toggleCameraFacing = () => {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
-  };
+  const gesture = Gesture.Tap()
+    .onEnd(({ x, y }) => {
+      runOnJS(focus)({ x, y })
+    })
 
   const takePhoto = async () => {
-    console.log('Tirando foto...');
     if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      console.log(photo)
-        router.push({ pathname: '/crop', params: { uri: photo!.uri } });
+      try {
+        const photo = await cameraRef.current.takePhoto({
+          enableAutoDistortionCorrection: true,
+        });
+        photo.path = `file://${photo.path}`;
+        console.log(photo.path);
+        router.push({ pathname: '/crop', params: { uri: photo.path } });
+      } catch (error) {
+        console.error('Erro ao tirar foto:', error);
+      }
     }
   };
 
   return (
-    <View style={styles.container}>
-      <CameraView ref={cameraRef} style={styles.camera}>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
-            <MaterialIcons name="camera-alt" size={40} color="white" />
-          </TouchableOpacity>
-        </View>
-      </CameraView>
+    console.log(
+      device?.supportsFocus),
+    <View style={styles.container}>    
+    <GestureHandlerRootView style={styles.container}>
+      <GestureDetector gesture={gesture}>
+      <Camera
+        ref={cameraRef}
+        style={styles.camera}
+        device={device}
+        isActive={true}
+        photo={true}
+        frameProcessor={frameProcessor}
+      />
+      </GestureDetector>
+      </GestureHandlerRootView>
+      <TouchableOpacity style={styles.captureButton} onPress={takePhoto}>
+        <MaterialIcons name="camera-alt" size={40} color="white" />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -53,13 +95,25 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', backgroundColor: '#000' },
   message: { textAlign: 'center', color: '#fff', marginBottom: 10 },
   camera: { flex: 1 },
-  buttonRow: {
-    flex: 1,
+  buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    padding: 40,
-    backgroundColor: 'transparent',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  captureButton: {
+    position: 'absolute', // Posiciona o botão sobre a câmera
+    bottom: 30, // Distância da parte inferior da tela
+    alignSelf: 'center', // Centraliza horizontalmente
+    backgroundColor: '#007AFF',
+    padding: 18,
+    borderRadius: 50,
+  },
+  switchButton: {
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 50,
   },
   button: {
     backgroundColor: '#007AFF',
@@ -69,23 +123,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: { color: '#fff', fontWeight: 'bold' },
-  shutterButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: '#fff',
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  buttonContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  captureButton: {
-    backgroundColor: '#007AFF',
-    padding: 18,
-    borderRadius: 50,
-  },
 });

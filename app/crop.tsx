@@ -10,7 +10,7 @@ export default function CropScreen() {
 
   const [hasPermission, setHasPermission] = useState(false);
   const [croppedImageUri, setCroppedImageUri] = useState<string | null>(null);
-  const imageUri = uri as string;
+  const imageUri = uri.toString();
 
   useEffect(() => {
     (async () => {

@@ -1,8 +1,9 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Image, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
-import * as MediaLibrary from 'expo-media-library';
-import { useEffect, useState } from 'react';
-import ImagePicker from 'react-native-image-crop-picker';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Image, StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import * as MediaLibrary from "expo-media-library";
+import { useEffect, useState } from "react";
+import ImagePicker from "react-native-image-crop-picker";
+import { usePhoto } from "@/context/PhotoProvider";
 
 export default function CropScreen() {
   const { uri } = useLocalSearchParams();
@@ -12,13 +13,16 @@ export default function CropScreen() {
   const [croppedImageUri, setCroppedImageUri] = useState<string | null>(null);
   const imageUri = uri.toString();
 
+  const photoContext = usePhoto();
+  const photo = photoContext ? photoContext.photo : null;
+
   useEffect(() => {
     (async () => {
       const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status === 'granted') {
+      if (status === "granted") {
         setHasPermission(true);
       } else {
-        alert('Permissão para acessar a mídia é necessária.');
+        alert("Permissão para acessar a mídia é necessária.");
       }
     })();
   }, []);
@@ -27,25 +31,30 @@ export default function CropScreen() {
     try {
       const croppedImage = await ImagePicker.openCropper({
         path: imageUri,
-        width: 300,
-        height: 300,
         cropping: true,
-        mediaType: 'photo'
+        mediaType: "photo",
+        freeStyleCropEnabled: true,
       });
+      console.log("Cropped image:", croppedImage);
       setCroppedImageUri(croppedImage.path);
     } catch (error) {
-      console.error('Erro ao cortar a imagem:', error);
+      console.error("Erro ao cortar a imagem:", error);
     }
   };
 
   const handleConfirm = () => {
-    router.replace({ pathname: '/', params: { imageUri: croppedImageUri || imageUri } });
+    router.replace({
+      pathname: "/",
+      params: { imageUri: croppedImageUri || imageUri },
+    });
   };
 
   if (!hasPermission) {
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>Solicitando permissão para acessar a mídia...</Text>
+        <Text style={styles.message}>
+          Solicitando permissão para acessar a mídia...
+        </Text>
       </View>
     );
   }
@@ -63,7 +72,6 @@ export default function CropScreen() {
       <Image
         source={{ uri: croppedImageUri || imageUri }}
         style={styles.image}
-        resizeMode="contain"
       />
       <TouchableOpacity style={styles.button} onPress={handleCrop}>
         <Text style={styles.buttonText}>Cortar Imagem</Text>
@@ -79,30 +87,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    backgroundColor: "#fff",
   },
   image: {
-    width: '100%',
-    height: '80%',
+    width: "100%",
+    height: "80%",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
+    objectFit: "contain",
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 16,
     borderRadius: 10,
     marginTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   message: {
     fontSize: 16,
-    textAlign: 'center',
-    color: '#666',
+    textAlign: "center",
+    color: "#666",
   },
 });

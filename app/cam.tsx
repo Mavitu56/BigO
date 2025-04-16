@@ -1,22 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Camera, Point, useCameraDevice, useCameraDevices, useCameraPermission, useFrameProcessor } from 'react-native-vision-camera';
+import { Camera, Point, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 
 export default function CameraScreen() {
   const { hasPermission, requestPermission } = useCameraPermission();
-  const [cameraPosition, setCameraPosition] = useState<'front' | 'back'>('back');
   const cameraRef = useRef<Camera>(null);
   const router = useRouter();
   const device = useCameraDevice('back');
 
-  const frameProcessor = useFrameProcessor((frame) => {
-    'worklet'
-    console.log(`Frame: ${frame.width}x${frame.height} (${frame.pixelFormat})`)
+  const focus = useCallback((point: Point) => {
+    const c = cameraRef.current
+    if (c == null) return
+    c.focus(point)
   }, [])
+
+  const gesture = Gesture.Tap()
+    .onEnd(({ x, y }) => {
+      runOnJS(focus)({ x, y })
+    })
 
   if (!device) {
     return (
@@ -41,17 +46,6 @@ export default function CameraScreen() {
       </View>
     );
   }
-  
-  const focus = useCallback((point: Point) => {
-    const c = cameraRef.current
-    if (c == null) return
-    c.focus(point)
-  }, [])
-
-  const gesture = Gesture.Tap()
-    .onEnd(({ x, y }) => {
-      runOnJS(focus)({ x, y })
-    })
 
   const takePhoto = async () => {
     if (cameraRef.current) {
@@ -80,7 +74,6 @@ export default function CameraScreen() {
         device={device}
         isActive={true}
         photo={true}
-        frameProcessor={frameProcessor}
       />
       </GestureDetector>
       </GestureHandlerRootView>

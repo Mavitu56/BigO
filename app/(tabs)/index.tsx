@@ -1,74 +1,157 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Image,
+  Button,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { ThemedView } from "@/components/ThemedView";
+import { useState } from "react";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import TextRecognition from "@react-native-ml-kit/text-recognition";
+import { PhotoRecognizer } from "react-native-vision-camera-text-recognition";
+import { PhotoProvider } from "@/context/PhotoProvider";
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const { imageUri } = useLocalSearchParams(); // pega a imagem passada por parâmetro
+
+  const [textImage, settextImage] = useState<string>("");
+
+  const handlePhotoPress = () => {
+    router.push("/cam");
+  };
+
+  const recognizeML = async () => {
+    console.log("Starting text recognition with react-native-mlkit...");
+    try {
+      const result = await TextRecognition.recognize(imageUri as string);
+      settextImage(result.text);
+      console.log("Recognized text:\n", result.text);
+    } catch (error) {
+      console.error("Text recognition failed:", error);
+    }
+  };
+
+  const photoRecognizer = async () => {
+    console.log(
+      "Starting text reognition with react-native-vision-camera-text-recognition..."
+    );
+
+    try {
+      const result = await PhotoRecognizer({
+        uri: imageUri as string,
+      });
+
+      console.log("Recognized text:\n", result.resultText);
+    } catch (error) {
+      console.error("Text recognition failed:", error);
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <PhotoProvider>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <ThemedView style={styles.containerMain}>
+            <TouchableOpacity
+              style={styles.cameraButton}
+              onPress={handlePhotoPress}
+            >
+              <Ionicons name="camera" size={32} color="white" />
+              <Text style={styles.cameraText}>Tirar Foto</Text>
+            </TouchableOpacity>
+            <View style={styles.container}>
+              {imageUri == null ? (
+                <Text> Nenhuma imagem carregada</Text>
+              ) : (
+                <Image
+                  source={{ uri: imageUri as string }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  }}
+                />
+              )}
+            </View>
+            <Button title="Reconhecer Texto" onPress={recognizeML} />
+            {/* <Button title="Reconhecer Texto" onPress={photoRecognizer} /> */}
+            {textImage != "" && (
+              <Text style={[styles.textInput, { marginVertical: 20 }]}>
+                {textImage}
+              </Text>
+            )}
+            <TextInput
+              style={styles.textInput}
+              placeholder="Digite seu prompt..."
+              placeholderTextColor="#999"
+              multiline
+            />
+          </ThemedView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </PhotoProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  containerMain: {
+    flex: 1,
+    justifyContent: "space-between",
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: "#fff",
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 60,
+    marginVertical: 20,
+    textAlign: "center",
+    alignItems: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  cameraButton: {
+    backgroundColor: "#007AFF",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    flexDirection: "row",
+    alignSelf: "center",
+    marginTop: 40,
+  },
+  cameraText: {
+    color: "white",
+    marginLeft: 10,
+    fontWeight: "bold",
+  },
+  textInput: {
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 16,
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  previewImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 12,
+    marginVertical: 20,
   },
 });

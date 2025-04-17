@@ -10,7 +10,10 @@ const MAPPING = {
   // See MaterialIcons here: https://icons.expo.fyi
   // See SF Symbols in the SF Symbols app on Mac.
   'house.fill': 'home',
+  'camera.fill': 'camera-alt',
   'paperplane.fill': 'send',
+  'person.fill': 'person',
+  'settings.fill': 'settings',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
 } as Partial<

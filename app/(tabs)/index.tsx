@@ -22,6 +22,7 @@ import { PhotoProvider } from "@/context/PhotoProvider";
 import { IP } from '@env';
 
 export default function HomeScreen() {
+  console.log("IP:", IP);
   const router = useRouter();
   const { imageUri } = useLocalSearchParams(); // pega a imagem passada por parâmetro
 

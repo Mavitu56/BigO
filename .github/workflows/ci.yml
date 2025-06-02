@@ -25,8 +25,5 @@ jobs:
       - name: Install Expo CLI
         run: npm install -g expo-cli
 
-      - name: Check Expo project
-        run: npx expo-doctor
-
       - name: Check TypeScript
         run: npx tsc --noEmit

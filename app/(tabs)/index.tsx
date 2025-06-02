@@ -10,16 +10,15 @@ import {
   ScrollView,
   Platform,
   ActivityIndicator, // Importado para exibir o loading
-} from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { ThemedView } from "@/components/ThemedView";
-import { useState } from "react";
+} from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { ThemedView } from '@/components/ThemedView';
+import { useState } from 'react';
 
-import TextRecognition from "@react-native-ml-kit/text-recognition";
-import { PhotoRecognizer } from "react-native-vision-camera-text-recognition";
-import { PhotoProvider } from "@/context/PhotoProvider";
-import { IP } from '@env';
+import TextRecognition from '@react-native-ml-kit/text-recognition';
+import { PhotoRecognizer } from 'react-native-vision-camera-text-recognition';
+import { PhotoProvider } from '@/context/PhotoProvider';
 
 import {
   BorderTypes,
@@ -36,10 +35,9 @@ import {
 import * as fs from 'expo-file-system';
 
 export default function HomeScreen() {
-  console.log("IP:", IP);
   const router = useRouter();
 
-  const [textImage, settextImage] = useState<string>("");
+  const [textImage, settextImage] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false); // Estado para controlar o loading
   const { imageUri } = useLocalSearchParams(); // pega a imagem passada por parâmetro
   const imageUriString = imageUri?.toString();
@@ -99,32 +97,34 @@ export default function HomeScreen() {
 
   const handleRecognizePress = async () => {
     setIsLoading(true); // Ativa o estado de carregamento
-    console.log("Starting text recognition with react-native-mlkit...");
+    console.log('Starting text recognition with react-native-mlkit...');
     try {
       // Usa o arquivo processado se existir, senão usa o original
       const imagePath = processedImageUri || imageUriString;
       const result = await TextRecognition.recognize(imagePath);
       settextImage(result.text);
-      console.log("Recognized text:\n", result.text);
-      console.log(`IP:${IP}`);
-      fetch(`http://${IP}:3000/analyze-complexity`, {
-        method: "POST",
+      console.log('Recognized text:\n', result.text);
+      // console.log(`IP:${IP}`);
+      fetch(`http://localhost:3000/analyze-complexity`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ code: result.text }),
       })
         .then((response) => response.json())
         .then((data) => {
-          console.log("Server response:", data);
-          router.push({ pathname: "/result", params: { value: JSON.stringify(data) } });
+          console.log('Server response:', data);
+          router.push({
+            pathname: '/result',
+            params: { value: JSON.stringify(data) },
+          });
         })
         .catch((error) => {
-          console.error("Error sending recognized text to server:", error);
+          console.error('Error sending recognized text to server:', error);
         });
-
     } catch (error) {
-      console.error("Text recognition failed:", error);
+      console.error('Text recognition failed:', error);
     } finally {
       setIsLoading(false); // Desativa o estado de carregamento
     }
@@ -142,7 +142,7 @@ export default function HomeScreen() {
 
       console.log('Recognized text:\n', result.resultText);
     } catch (error) {
-      console.error("Erro ao processar:", error);
+      console.error('Erro ao processar:', error);
     } finally {
       setIsLoading(false); // Desativa o estado de carregamento
     }
@@ -205,7 +205,7 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
             )}
-            <Button title="Reconhecer Texto" onPress={recognizeML} />
+            <Button title="Reconhecer Texto" onPress={handleRecognizePress} />
             {textImage != '' && (
               <Text style={[styles.textInput, { marginVertical: 20 }]}>
                 {textImage}
@@ -285,15 +285,15 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   recognizeButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: '#007AFF',
     padding: 12,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: 'center',
     marginTop: 20,
   },
   recognizeButtonText: {
-    color: "white",
-    fontWeight: "bold",
+    color: 'white',
+    fontWeight: 'bold',
     fontSize: 16,
   },
 });

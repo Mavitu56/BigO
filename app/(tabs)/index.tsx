@@ -9,6 +9,7 @@ import {
     KeyboardAvoidingView,
     ScrollView,
     Platform,
+    ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ import React, { useState, useEffect } from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { PhotoRecognizer } from 'react-native-vision-camera-text-recognition';
 import { PhotoProvider } from '@/context/PhotoProvider';
+import { IP } from '@env'
 
 import {
     BorderTypes,
@@ -34,6 +36,7 @@ import {
 import * as fs from 'expo-file-system';
 
 export default function HomeScreen() {
+    console.log('IP:', IP);
     const router = useRouter();
 
     const { imageUri } = useLocalSearchParams(); // pega a imagem passada por parâmetro
@@ -44,17 +47,7 @@ export default function HomeScreen() {
     );
 
     const [textImage, settextImage] = useState<string>('');
-
-    useEffect(() => {
-        const processAndRecognize = async () => {
-            await processImage();
-            await recognizeML();
-        };
-
-        if (imageUriString) {
-            processAndRecognize();
-        }
-    }, [imageUriString]);
+    const [isLoading, setIsLoading] = useState<boolean>(false); // Estado para controlar o loading
 
 
     const handlePhotoPress = () => {
@@ -107,15 +100,35 @@ export default function HomeScreen() {
     };
 
     const recognizeML = async () => {
+        setIsLoading(true);
         console.log('Starting text recognition with react-native-mlkit...');
         try {
             // Usa o arquivo processado se existir, senão usa o original
             const imagePath = processedImageUri || imageUriString;
-            const result = await TextRecognition.recognize(imagePath);
+            const result = await TextRecognition.recognize(imagePath as string);
             settextImage(result.text);
             console.log('Recognized text:\n', result.text);
+            console.log(`IP:${IP}`);
+            fetch(`http://${IP}:8000/analyze`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ code: result.text }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log("Server response:", data);
+                    router.push({ pathname: "/result", params: { value: JSON.stringify(data) } });
+                })
+                .catch((error) => {
+                    console.error("Error sending recognized text to server:", error);
+                });
+
         } catch (error) {
-            console.error('Text recognition failed:', error);
+            console.error("Text recognition failed:", error);
+        } finally {
+            setIsLoading(false); // Desativa o estado de carregamento
         }
     };
 
@@ -132,6 +145,8 @@ export default function HomeScreen() {
             console.log('Recognized text:\n', result.resultText);
         } catch (error) {
             console.error('Text recognition failed:', error);
+        } finally {
+            setIsLoading(false); // Desativa o estado de carregamento
         }
     };
 
@@ -149,7 +164,7 @@ export default function HomeScreen() {
                             {imageUriString ? (
                                 <Image
                                     source={{ uri: processedImageUri || imageUriString }}
-                                    style={{ width: '100%', height: '100%', borderRadius: 12 }}
+                                    style={{ width: '100%', height: '100%', borderRadius: 12, objectFit: "contain"}}
                                     resizeMode="cover"
                                 />
                             ) : (
@@ -167,7 +182,12 @@ export default function HomeScreen() {
                             multiline
                         />
 
-                        <TouchableOpacity style={styles.uploadButton}>
+                        {isLoading && (
+                            <ActivityIndicator size="large" color="#a084e8" style={{ marginVertical: 20 }} />
+                        )}
+
+
+                        <TouchableOpacity style={styles.uploadButton} onPress={recognizeML}>
                             <Text style={styles.uploadButtonText}>Fazer o upload</Text>
                         </TouchableOpacity>
 
@@ -241,7 +261,7 @@ const styles = StyleSheet.create({
     },
 
     imageUploadBox: {
-        backgroundColor: '#c2a8fa', 
+        backgroundColor: '#c2a8fa',
         borderRadius: 12,
         height: 140,
         justifyContent: 'center',

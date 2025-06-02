@@ -22,5 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Expo CLI
+        run: npm install -g expo-cli
+
+      - name: Check Expo project
+        run: expo doctor
+
       - name: Check TypeScript
         run: npx tsc --noEmit

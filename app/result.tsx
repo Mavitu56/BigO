@@ -17,19 +17,37 @@ export default function Result() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Complexidade Identificada:</Text>
       <View style={styles.badge}>
-        <Text style={styles.badgeText}>{parsedValue?.complexity || "O(?)"}</Text>
+        <Text style={styles.badgeText}>
+          {typeof parsedValue?.complexity === "string"
+            ? parsedValue.complexity
+            : parsedValue?.complexity?.bigO || "O(?)"}
+        </Text>
       </View>
 
       <Text style={styles.sectionTitle}>Explicação:</Text>
       <Text style={styles.paragraph}>
-        {parsedValue?.explanation ||
-          "Não foi possível gerar explicação para a complexidade."}
+        {typeof parsedValue?.explanation === "string"
+          ? parsedValue.explanation
+          : typeof parsedValue?.complexity?.explanation === "string"
+            ? parsedValue.complexity.explanation
+            : JSON.stringify(parsedValue?.explanation) ||
+              "Não foi possível gerar explicação para a complexidade."}
       </Text>
 
       <Text style={styles.sectionTitle}>Sugestão:</Text>
       <Text style={styles.paragraph}>
-        {parsedValue?.suggestion ||
-          "Nenhuma sugestão foi fornecida pelo servidor."}
+        {typeof parsedValue?.complexity?.improvement === "string"
+          ? parsedValue.complexity.improvement
+          : JSON.stringify(parsedValue?.improvement) ||
+            "Nenhuma sugestão foi fornecida pelo servidor."}
+      </Text>
+
+      <Text style={styles.sectionTitle}>Complexidade melhorada:</Text>
+      <Text style={styles.paragraph}>
+        {typeof parsedValue?.complexity?.improved_big_o === "string"
+          ? parsedValue.complexity.improved_big_o
+          : JSON.stringify(parsedValue?.improved_big_o) ||
+            "Nenhuma sugestão foi fornecida pelo servidor."}
       </Text>
 
       {parsedValue?.suggested_code && (

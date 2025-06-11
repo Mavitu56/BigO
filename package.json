@@ -43,7 +43,6 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
-    "react-native-dotenv": "^3.4.11",
     "react-native-fast-opencv": "^0.4.5",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-image-crop-picker": "^0.42.0",

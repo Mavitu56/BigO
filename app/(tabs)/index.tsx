@@ -19,7 +19,6 @@ import React, { useState, useEffect } from 'react';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { PhotoRecognizer } from 'react-native-vision-camera-text-recognition';
 import { PhotoProvider } from '@/context/PhotoProvider';
-import { IP } from '@env'
 
 import {
     BorderTypes,
@@ -36,6 +35,7 @@ import {
 import * as fs from 'expo-file-system';
 
 export default function HomeScreen() {
+    const IP = '200.235.82.49'
     console.log('IP:', IP);
     const router = useRouter();
 
@@ -109,7 +109,7 @@ export default function HomeScreen() {
             settextImage(result.text);
             console.log('Recognized text:\n', result.text);
             console.log(`IP:${IP}`);
-            fetch(`http://${IP}:8000/analyze`, {
+            fetch(`http://${IP}:3000/analyze-complexity`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -164,7 +164,7 @@ export default function HomeScreen() {
                             {imageUriString ? (
                                 <Image
                                     source={{ uri: processedImageUri || imageUriString }}
-                                    style={{ width: '100%', height: '100%', borderRadius: 12, objectFit: "contain"}}
+                                    style={{ width: '100%', height: '100%', borderRadius: 12, objectFit: "contain" }}
                                     resizeMode="cover"
                                 />
                             ) : (

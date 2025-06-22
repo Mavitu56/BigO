@@ -31,7 +31,7 @@ export default function Result() {
           : typeof parsedValue?.complexity?.explanation === "string"
             ? parsedValue.complexity.explanation
             : JSON.stringify(parsedValue?.explanation) ||
-              "Não foi possível gerar explicação para a complexidade."}
+            "Não foi possível gerar explicação para a complexidade."}
       </Text>
 
       <Text style={styles.sectionTitle}>Sugestão:</Text>
@@ -39,7 +39,7 @@ export default function Result() {
         {typeof parsedValue?.complexity?.improvement === "string"
           ? parsedValue.complexity.improvement
           : JSON.stringify(parsedValue?.improvement) ||
-            "Nenhuma sugestão foi fornecida pelo servidor."}
+          "Nenhuma sugestão foi fornecida pelo servidor."}
       </Text>
 
       <Text style={styles.sectionTitle}>Complexidade melhorada:</Text>
@@ -47,7 +47,7 @@ export default function Result() {
         {typeof parsedValue?.complexity?.improved_big_o === "string"
           ? parsedValue.complexity.improved_big_o
           : JSON.stringify(parsedValue?.improved_big_o) ||
-            "Nenhuma sugestão foi fornecida pelo servidor."}
+          "Nenhuma sugestão foi fornecida pelo servidor."}
       </Text>
 
       {parsedValue?.suggested_code && (
@@ -57,6 +57,28 @@ export default function Result() {
           </Text>
         </View>
       )}
+
+      <Text style={styles.performanceText}>
+        Quer ver a comparação de performance?
+      </Text>
+      <TouchableOpacity
+        style={styles.buttonOutlinePurple}
+        onPress={() =>
+          router.push({
+            pathname: "/complexity-graph",
+            params: {
+              value: value,
+              current: parsedValue?.complexity?.bigO,
+              new: parsedValue?.complexity?.improved_big_o,
+            },
+          })
+        }
+      >
+        <Text style={styles.buttonOutlinePurpleText}>
+          Ver gráfico de complexidade
+        </Text>
+      </TouchableOpacity>
+
 
       <TouchableOpacity style={styles.buttonFilled} onPress={() => router.push("/")}>
         <Text style={styles.buttonFilledText}>Fazer outra Análise</Text>
@@ -78,6 +100,7 @@ const styles = StyleSheet.create({
     color: "#6a0dad",
     alignSelf: "flex-start",
     marginBottom: 4,
+    marginTop: 80,
   },
   badge: {
     backgroundColor: "#e6d6fa",
@@ -98,6 +121,7 @@ const styles = StyleSheet.create({
     color: "#6a0dad",
     alignSelf: "flex-start",
     marginBottom: 6,
+    marginTop: 16,
   },
   paragraph: {
     fontSize: 16,
@@ -145,6 +169,25 @@ const styles = StyleSheet.create({
   },
   buttonFilledText: {
     color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  performanceText: {
+    fontSize: 16,
+    marginBottom: 10,
+    alignSelf: "flex-start",
+  },
+  buttonOutlinePurple: {
+    borderWidth: 2,
+    borderColor: "#6a0dad",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 12,
+    width: "100%",
+    alignItems: "center",
+  },
+  buttonOutlinePurpleText: {
+    color: "#6a0dad",
     fontWeight: "bold",
     fontSize: 16,
   },

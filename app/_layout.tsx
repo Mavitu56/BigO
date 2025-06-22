@@ -33,6 +33,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="cam" options={{ headerShown: false }} />
         <Stack.Screen name="crop" options={{ headerShown: false }} />
+        <Stack.Screen name="complexity-graph" options={{ headerShown: false }} />
+        <Stack.Screen name="result" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="light" backgroundColor="#9762F6" />

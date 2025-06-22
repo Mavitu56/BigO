@@ -35,12 +35,14 @@ import {
 import * as fs from 'expo-file-system';
 
 export default function HomeScreen() {
-    const IP = '200.235.82.49'
+    const IP = ''
     console.log('IP:', IP);
     const router = useRouter();
 
     const { imageUri } = useLocalSearchParams(); // pega a imagem passada por parâmetro
     const imageUriString = imageUri?.toString();
+
+    const [contextText, setContextText] = useState('');
 
     const [processedImageUri, setProcessedImageUri] = useState<string | null>(
         null
@@ -49,6 +51,8 @@ export default function HomeScreen() {
     const [textImage, settextImage] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false); // Estado para controlar o loading
 
+    // Adicione um estado para controlar qual botão está ativo
+    const [activeButton, setActiveButton] = useState<'original' | 'preprocess' | null>(null);
 
     const handlePhotoPress = () => {
         setProcessedImageUri(null);
@@ -99,6 +103,17 @@ export default function HomeScreen() {
         OpenCV.clearBuffers();
     };
 
+    // Altere as funções para atualizar o estado
+    const handleOriginal = () => {
+        resetFilter();
+        setActiveButton('original');
+    };
+
+    const handlePreprocess = () => {
+        processImage();
+        setActiveButton('preprocess');
+    };
+
     const recognizeML = async () => {
         setIsLoading(true);
         console.log('Starting text recognition with react-native-mlkit...');
@@ -114,7 +129,7 @@ export default function HomeScreen() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ code: result.text }),
+                body: JSON.stringify({ code: result.text, prompt: contextText }),
             })
                 .then((response) => response.json())
                 .then((data) => {
@@ -151,137 +166,175 @@ export default function HomeScreen() {
     };
 
     return (
-        <PhotoProvider>
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        <KeyboardAvoidingView
+            style={{ flex: 1, backgroundColor: '#fff' }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+        >
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
             >
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                    <ThemedView style={styles.containerMain}>
-                        <Text style={styles.title}>Envie sua imagem</Text>
-
+                <View style={styles.block1}>
+                    <Text style={styles.title}>Envie sua imagem</Text>
+                    <View style={styles.imageWrapper}>
                         <TouchableOpacity style={styles.imageUploadBox} onPress={handlePhotoPress}>
                             {imageUriString ? (
                                 <Image
                                     source={{ uri: processedImageUri || imageUriString }}
-                                    style={{ width: '100%', height: '100%', borderRadius: 12, objectFit: "contain" }}
-                                    resizeMode="cover"
+                                    style={styles.previewImage}
+                                    resizeMode="contain" // garante que a imagem inteira aparece
                                 />
                             ) : (
                                 <Ionicons name="camera" size={40} color="#fff" />
                             )}
                         </TouchableOpacity>
+                    </View>
+                </View>
 
+                <View style={styles.buttonRow}>
+                    <TouchableOpacity
+                        style={[
+                            styles.actionButton,
+                            activeButton === 'original' && styles.active,
+                            !imageUriString && styles.deactivate,
+                        ]}
+                        onPress={handleOriginal}
+                        disabled={!imageUriString}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.actionButtonText}>Original</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[
+                            styles.actionButton,
+                            activeButton === 'preprocess' && styles.active,
+                            !imageUriString && styles.deactivate,
+                        ]}
+                        onPress={handlePreprocess}
+                        disabled={!imageUriString}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={styles.actionButtonText}>Pré-Processar Imagem</Text>
+                    </TouchableOpacity>
+                </View>
 
-                        <Text style={styles.subtitle}>Envie o contexto</Text>
+                <View style={styles.block2}>
+                    <Text style={styles.subtitle}>Envie o contexto</Text>
+                    <TextInput
+                        style={styles.textInput}
+                        placeholder="Tenho um código em python que faz uma multiplicação de matriz..."
+                        placeholderTextColor="#999"
+                        multiline
+                        value={contextText}
+                        onChangeText={setContextText}
+                    />
+                </View>
 
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder="Tenho um código em python que faz uma multiplicação de matriz..."
-                            placeholderTextColor="#999"
-                            multiline
-                        />
+                {isLoading && (
+                    <ActivityIndicator size="large" color="#9762F6" style={{ marginVertical: 20 }} />
+                )}
 
-                        {isLoading && (
-                            <ActivityIndicator size="large" color="#a084e8" style={{ marginVertical: 20 }} />
-                        )}
-
-
-                        <TouchableOpacity style={styles.uploadButton} onPress={recognizeML}>
-                            <Text style={styles.uploadButtonText}>Fazer o upload</Text>
-                        </TouchableOpacity>
-
-                    </ThemedView>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </PhotoProvider>
+                <TouchableOpacity
+                    style={[
+                        styles.uploadButton,
+                        !imageUriString && styles.uploadButtonDisabled,
+                    ]}
+                    onPress={recognizeML}
+                    disabled={!imageUriString}
+                >
+                    <Text style={styles.uploadButtonText}>Fazer o Upload</Text>
+                </TouchableOpacity>
+            </ScrollView>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
-    containerMain: {
-        flex: 1,
-        justifyContent: 'space-between',
-        padding: 20,
+    scrollContent: {
+        padding: 24, // padding mais generoso
+        paddingTop: 40, // espaço extra no topo
+        paddingBottom: 10,
         backgroundColor: '#fff',
     },
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 20,
-        backgroundColor: '#fff',
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 12,
-        marginBottom: 60,
-        marginVertical: 20,
-        textAlign: 'center',
-        alignItems: 'center',
+    block1: {
+        marginBottom: 20, // mais espaço entre blocos
     },
-    cameraButton: {
-        backgroundColor: '#007AFF',
-        padding: 12,
-        borderRadius: 10,
-        alignItems: 'center',
-        flexDirection: 'row',
-        alignSelf: 'center',
-        marginTop: 40,
+    block2: {
+        marginBottom: 40, // mais espaço entre blocos
     },
-    cameraText: {
-        color: 'white',
-        marginLeft: 10,
+    title: {
+        fontSize: 20,
         fontWeight: 'bold',
+        marginBottom: 16, // espaçamento mais generoso após o título
     },
-    textInput: {
-        borderColor: '#ccc',
-        borderWidth: 1,
-        borderRadius: 10,
-        padding: 12,
-        fontSize: 16,
-        minHeight: 100,
-        textAlignVertical: 'top',
+    subtitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginBottom: 16,
+    },
+    imageWrapper: {
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+    imageUploadBox: {
+        backgroundColor: '#9762F6',
+        borderRadius: 12,
+        width: '100%',
+        height: 220, // altura maior pra acomodar bem a imagem
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     previewImage: {
         width: '100%',
-        height: 200,
-        borderRadius: 12,
-        marginVertical: 20,
+        height: '100%',
     },
-    title: {
+    textInput: {
+        borderColor: '#c2a8fa',
+        borderWidth: 2,
+        borderRadius: 12,
+        padding: 14,
         fontSize: 16,
-        fontWeight: 'bold',
-        marginTop: 60,
-        marginBottom: -50,
+        minHeight: 140,
+        textAlignVertical: 'top',
     },
-
-    subtitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        marginBottom: -50,
-    },
-
-    imageUploadBox: {
-        backgroundColor: '#c2a8fa',
-        borderRadius: 12,
-        height: 140,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: -20,
-    },
-
-    uploadButton: {
-        backgroundColor: '#a084e8',
-        paddingVertical: 14,
-        borderRadius: 20,
-        alignItems: 'center',
-        marginTop: 30,
-        marginBottom: 20,
-    },
-
     uploadButtonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: 'bold',
     },
-
+    uploadButton: {
+        backgroundColor: '#9762F6',
+        paddingVertical: 18,
+        borderRadius: 20,
+        alignItems: 'center',
+    },
+    uploadButtonDisabled: {
+        backgroundColor: '#C0A4F3', // cor mais clara para desabilitado
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingBottom: 20,
+    },
+    actionButton: {
+        backgroundColor: '#C0A4F3',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+    },
+    actionButtonDisabled: {
+        backgroundColor: '#d3d3d3',
+    },
+    actionButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    active: {
+        backgroundColor: '#9762F6', // cor para ativo
+    },
+    deactivate: {
+        backgroundColor: '#C0A4F3', // cor para desativado
+    },
 });

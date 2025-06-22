@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   buttonOutline: {
     borderWidth: 2,
-    borderColor: "#a020f0",
+    borderColor: "#9762F6",
     padding: 12,
     borderRadius: 10,
     marginBottom: 12,
@@ -132,12 +132,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonOutlineText: {
-    color: "#a020f0",
+    color: "#9762F6",
     fontWeight: "bold",
     fontSize: 16,
   },
   buttonFilled: {
-    backgroundColor: "#a020f0",
+    backgroundColor: "#9762F6",
     padding: 12,
     borderRadius: 10,
     width: "100%",

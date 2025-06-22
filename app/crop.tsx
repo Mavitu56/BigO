@@ -3,6 +3,7 @@ import { Image, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import * as MediaLibrary from 'expo-media-library';
 import React, { useEffect, useState } from 'react';
 import ImagePicker from 'react-native-image-crop-picker';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'; // adicionado
 
 export default function CropScreen() {
   const { uri } = useLocalSearchParams();
@@ -65,16 +66,33 @@ export default function CropScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header com título e botão refazer à esquerda */}
+      <View style={styles.headerRow}>
+        <TouchableOpacity
+          style={styles.refazerHeaderButton}
+          onPress={() => router.replace('/cam')}
+          activeOpacity={0.8}
+        >
+          <MaterialIcons name="arrow-back-ios-new" size={28} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Editar Imagem</Text>
+        <View style={{ width: 44 }} pointerEvents="none" />
+      </View>
+
       <Image
         source={{ uri: croppedImageUri || imageUri }}
         style={styles.image}
       />
-      <TouchableOpacity style={styles.button} onPress={handleCrop}>
-        <Text style={styles.buttonText}>Cortar Imagem</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={handleConfirm}>
-        <Text style={styles.buttonText}>Confirmar Recorte</Text>
-      </TouchableOpacity>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity style={styles.iconButton} onPress={handleCrop}>
+          <MaterialIcons name="crop" size={28} color="#fff" />
+          <Text style={styles.buttonText}>Cortar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton} onPress={handleConfirm}>
+          <MaterialIcons name="check-circle" size={28} color="#fff" />
+          <Text style={styles.buttonText}>Confirmar</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -83,6 +101,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingTop: 40,
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
@@ -94,20 +113,56 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     objectFit: 'contain',
   },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 10,
-    marginTop: 20,
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 24,
+  },
+  iconButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#9762F6', // alterado
+    paddingVertical: 14,
+    paddingHorizontal: 22,
+    borderRadius: 10,
   },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
+    marginLeft: 8,
+    fontSize: 16,
   },
   message: {
     fontSize: 16,
     textAlign: 'center',
     color: '#666',
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 18,
+    marginTop: 8,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#22223b',
+    textAlign: 'center',
+    flex: 1,
+  },
+  refazerHeaderButton: {
+    backgroundColor: '#9762F6',
+    borderRadius: 24,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
   },
 });

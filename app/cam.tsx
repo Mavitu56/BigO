@@ -176,17 +176,17 @@ const styles = StyleSheet.create({
     position: 'absolute', // Posiciona o botão sobre a câmera
     bottom: 30, // Distância da parte inferior da tela
     alignSelf: 'center', // Centraliza horizontalmente
-    backgroundColor: '#007AFF',
+    backgroundColor: '#9762F6', // alterado
     padding: 18,
     borderRadius: 50,
   },
   switchButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#9762F6', // alterado
     padding: 12,
     borderRadius: 50,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#9762F6', // alterado
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',

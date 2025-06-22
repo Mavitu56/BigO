@@ -31,9 +31,11 @@ export default function RootLayout() {
     <ThemeProvider value={DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="cam" options={{ headerShown: false }} />
+        <Stack.Screen name="crop" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
-      <StatusBar style="light" backgroundColor="#007AFF" />
+      <StatusBar style="light" backgroundColor="#9762F6" />
     </ThemeProvider>
   );
 }

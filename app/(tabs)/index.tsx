@@ -35,7 +35,7 @@ import {
 import * as fs from 'expo-file-system';
 
 export default function HomeScreen() {
-    const IP = '192.168.0.47'
+    const IP = ''
     console.log('IP:', IP);
     const router = useRouter();
 
